@@ -34,7 +34,7 @@ services:
   database:
     image: mariadb:10.5
     restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --skip-ssl
     volumes:
       - "./database:/var/lib/mysql"
     environment:
@@ -63,6 +63,7 @@ services:
       - "./appvar/:/app/var/"
       - "./nginx/:/etc/nginx/http.d/"
       - "./logs/:/app/storage/logs"
+      - "./my.cnf:/root/.my.cnf"
     # Sets the config stuff
     environment:
       <<: [*panel-environment]
