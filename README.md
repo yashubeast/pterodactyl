@@ -2,12 +2,8 @@
 
 ## Initial Setup
 1. docker compose up -d
-2. run this command to make a admin user `docker compose exec panel php artisan p:user:make`
-3. if above command failed run these 2 commands then do step 2 again
-```sh
-docker compose exec panel bash -c 'echo -e "[client]\nssl=false\nskip-ssl" > ~/.my.cnf'
-docker compose exec panel php artisan migrate --force
-```
+2. run this command to make a new user `make new_user`
+3. if above command failed run this command then do step 2 again `make sqlfix`
 
 ## Creating first Node
 1. Click settings-icon (tooltip: admin) at top right

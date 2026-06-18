@@ -10,8 +10,7 @@ x-common:
     &panel-environment
     #This is the URL that your panel will be on after being reverse proxied.
     # set this to "https://yoursubdomain.yourdomain.yourdomainstld"
-    # APP_URL: "https://subdomain.domain.tld"
-    APP_URL: ""
+    APP_URL: "https://subdomain.domain.tld"
     # A list of valid timezones can be found here:
     # http://php.net/manual/en/timezones.php
     APP_TIMEZONE: "America/New_York"
@@ -35,8 +34,7 @@ services:
   database:
     image: mariadb:10.5
     restart: unless-stopped
-    # Option to choose ssl or not.
-    command: --default-authentication-plugin=mysql_native_password --skip-ssl
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
       - "./database:/var/lib/mysql"
     environment:
