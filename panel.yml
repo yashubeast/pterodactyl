@@ -1,0 +1,90 @@
+# This section declares the basic config of all of your Containers that are
+# declared below as "services"
+x-common:
+  database:
+    &db-environment
+    # You don't need to change these because it will not be exposed to the public.
+    MYSQL_PASSWORD: &db-password "CHANGE_ME"
+    MYSQL_ROOT_PASSWORD: "CHANGE_ME_TOO"
+  panel:
+    &panel-environment
+    #This is the URL that your panel will be on after being reverse proxied.
+    # set this to "https://yoursubdomain.yourdomain.yourdomainstld"
+    # APP_URL: "https://subdomain.domain.tld"
+    APP_URL: ""
+    # A list of valid timezones can be found here:
+    # http://php.net/manual/en/timezones.php
+    APP_TIMEZONE: "America/New_York"
+    APP_SERVICE_AUTHOR: "youremail@gmail.com"
+  # Mail is an optional Setup.
+  # You will need an App Password as the MAIL_PASSWORD field, not your
+  # gmail password. Uncomment the following lines to enable mail.
+  # Make sure to uncomment the mail line in services:panel:environment
+
+  #mail:
+    #&mail-environment
+    #MAIL_FROM: "youremail@gmail.com"
+    #MAIL_DRIVER: "smtp"
+    #MAIL_HOST: "smtp.gmail.com"
+    #MAIL_PORT: "587"
+    #MAIL_USERNAME: "youremail@gmail.com"
+    #MAIL_PASSWORD: ""
+    #MAIL_ENCRYPTION: "true"
+services:
+
+  database:
+    image: mariadb:10.5
+    restart: unless-stopped
+    # Option to choose ssl or not.
+    command: --default-authentication-plugin=mysql_native_password --skip-ssl
+    volumes:
+      - "./database:/var/lib/mysql"
+    environment:
+      <<: *db-environment
+      MYSQL_DATABASE: "panel"
+      MYSQL_USER: "pterodactyl"
+
+  cache:
+    image: redis:alpine
+    restart: unless-stopped
+
+  panel:
+    image: ghcr.io/pterodactyl/panel:v1.13.0
+    restart: unless-stopped
+    # For NGINX Reverse Proxy.
+    ports:
+      - "802:80"
+      - "4432:443"
+    # Links these containers together in a docker network.
+    links:
+      - database
+      - cache
+    # This is where docker will bind certain parts of container to your actual
+    # host OS. These don't really matter that much.
+    volumes:
+      - "./appvar/:/app/var/"
+      - "./nginx/:/etc/nginx/http.d/"
+      - "./logs/:/app/storage/logs"
+    # Sets the config stuff
+    environment:
+      <<: [*panel-environment]
+      # <<: [*mail-environment]
+      DB_PASSWORD: *db-password
+      APP_ENV: "production"
+      APP_ENVIRONMENT_ONLY: "false"
+      CACHE_DRIVER: "redis"
+      SESSION_DRIVER: "redis"
+      QUEUE_DRIVER: "redis"
+      REDIS_HOST: "cache"
+      DB_HOST: "database"
+      DB_PORT: "3306"
+
+networks:
+  ptero0:
+    name: ptero0
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "192.55.0.0/16"
+    driver_opts:
+      com.docker.network.bridge.name: ptero0
